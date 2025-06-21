@@ -1,28 +1,43 @@
 package com.jpmc.midascore.foundation;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
+import java.math.BigDecimal;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Entity
 public class Balance {
-    private float amount;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private BigDecimal amount;
+
+    // ✅ Default constructor needed for JPA
     public Balance() {
     }
 
-    public Balance(float amount) {
+    // Existing constructor
+    public Balance(BigDecimal amount) {
         this.amount = amount;
     }
 
-    public float getAmount() {
+    public Long getId() {
+        return id;
+    }
+
+    public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(float amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
 
     @Override
     public String toString() {
-        return "Balance {amount=" + amount + "}";
+        return "BEGIN_BALANCE_OUTPUT\n" +
+                amount + "\n" +
+                "END_BALANCE_OUTPUT";
     }
 }

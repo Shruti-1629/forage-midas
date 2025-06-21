@@ -1,5 +1,11 @@
 package com.jpmc.midascore;
 
+import com.jpmc.midascore.KafkaProducer;
+import com.jpmc.midascore.UserPopulator;
+import com.jpmc.midascore.FileLoader;
+import com.jpmc.midascore.repository.UserRecordRepository;
+import com.jpmc.midascore.entity.UserRecord;
+
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +16,10 @@ import org.springframework.test.annotation.DirtiesContext;
 
 @SpringBootTest
 @DirtiesContext
-@EmbeddedKafka(partitions = 1, brokerProperties = {"listeners=PLAINTEXT://localhost:9092", "port=9092"})
+@EmbeddedKafka(
+        partitions = 1,
+        bootstrapServersProperty = "spring.kafka.bootstrap-servers",
+        topics = {"${general.kafka-topic}"})
 public class TaskThreeTests {
     static final Logger logger = LoggerFactory.getLogger(TaskThreeTests.class);
 
@@ -23,6 +32,10 @@ public class TaskThreeTests {
     @Autowired
     private FileLoader fileLoader;
 
+    @Autowired
+    private UserRecordRepository userRecordRepository;
+
+
     @Test
     void task_three_verifier() throws InterruptedException {
         userPopulator.populate();
@@ -30,17 +43,12 @@ public class TaskThreeTests {
         for (String transactionLine : transactionLines) {
             kafkaProducer.send(transactionLine);
         }
-        Thread.sleep(2000);
 
-
-        logger.info("----------------------------------------------------------");
-        logger.info("----------------------------------------------------------");
-        logger.info("----------------------------------------------------------");
-        logger.info("use your debugger to find out what waldorf's balance is after all transactions are processed");
-        logger.info("kill this test once you find the answer");
+        UserRecord w = userRecordRepository.findByName("waldorf")
+                .orElseThrow();
+        System.out.println("Waldorf balance: " + w.getBalance());
         while (true) {
             Thread.sleep(20000);
-            logger.info("...");
         }
     }
 }
